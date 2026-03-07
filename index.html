@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Total Body Lift</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#f5f5f5;margin:0;padding:20px}
+.container{max-width:600px;margin:auto}
+h1{text-align:center}
+.day-buttons{display:flex;justify-content:center;gap:10px;margin-bottom:20px}
+button{padding:10px 16px;border-radius:12px;border:1px solid #ccc;background:white;cursor:pointer}
+button.active{background:black;color:white}
+.card{background:white;border-radius:16px;padding:16px;margin-bottom:20px;box-shadow:0 4px 10px rgba(0,0,0,0.08)}
+.exercise{margin-bottom:14px}
+.exercise input{width:100%;padding:10px;border-radius:10px;border:1px solid #ccc;margin-top:4px}
+.small{font-size:12px;color:#666}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Total Body Lift</h1>
+
+<div class="day-buttons">
+<button onclick="setDay('A')" id="btnA" class="active">Day A</button>
+<button onclick="setDay('B')" id="btnB">Day B</button>
+<button onclick="setDay('C')" id="btnC">Day C</button>
+</div>
+
+<div class="card" id="workout"></div>
+
+<div class="card">
+<b>Progression Rule</b>
+<p class="small">When you reach the top of the rep range for all sets, increase weight next workout by the smallest increment.</p>
+
+<b>Shoulder & Back Notes</b>
+<p class="small">Use neutral grips, avoid maximal loading, stop 1–2 reps before failure.</p>
+</div>
+
+</div>
+
+<script>
+
+let day='A'
+
+const workouts={
+A:[
+{name:'Machine Chest Press',target:'3 x 6-8'},
+{name:'Neutral Grip Lat Pulldown',target:'3 x 8-10'},
+{name:'Leg Press',target:'3 x 8-10'},
+{name:'Seated DB Lateral Raise',target:'3 x 12-15'},
+{name:'Cable Triceps Pushdown',target:'3 x 10-12'},
+{name:'EZ Bar Curl',target:'3 x 8-12'}
+],
+B:[
+{name:'Incline DB Press (Neutral Grip)',target:'3 x 8-10'},
+{name:'Chest Supported Row',target:'3 x 8-10'},
+{name:'DB Romanian Deadlift (Light)',target:'3 x 8-10'},
+{name:'Cable Face Pull',target:'3 x 12-15'},
+{name:'Overhead Rope Triceps Extension',target:'3 x 10-12'},
+{name:'Hammer Curl',target:'3 x 10-12'}
+],
+C:[
+{name:'Machine Shoulder Press (Neutral)',target:'3 x 6-8'},
+{name:'Assisted Pull-Up or Pulldown',target:'3 x 8-10'},
+{name:'Hack Squat or Goblet Squat',target:'3 x 8-10'},
+{name:'Cable Lateral Raise',target:'3 x 12-15'},
+{name:'Close Grip Bench (Machine/Smith)',target:'3 x 8-10'},
+{name:'Cable Curl',target:'3 x 10-12'}
+]
+}
+
+function render(){
+const container=document.getElementById('workout')
+container.innerHTML=''
+
+workouts[day].forEach((ex,i)=>{
+
+const div=document.createElement('div')
+div.className='exercise'
+
+const target=document.createElement('div')
+target.className='small'
+target.innerText='Target: '+ex.target
+
+const name=document.createElement('input')
+name.value=ex.name
+name.oninput=(e)=>{workouts[day][i].name=e.target.value}
+
+const log=document.createElement('input')
+log.placeholder='Log weight x reps (example: 60 x 8,8,7)'
+
+
+div.appendChild(target)
+div.appendChild(name)
+div.appendChild(log)
+
+container.appendChild(div)
+
+})
+}
+
+function setDay(d){
+day=d
+
+document.getElementById('btnA').classList.remove('active')
+document.getElementById('btnB').classList.remove('active')
+document.getElementById('btnC').classList.remove('active')
+
+document.getElementById('btn'+d).classList.add('active')
+
+render()
+}
+
+render()
+
+</script>
+
+</body>
+</html>
