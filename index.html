@@ -1,167 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Total Body Lift</title>
-<link rel="manifest" href="manifest.json">
-</head>
 
-<!-- iPhone Home Screen Icon -->
-<link rel="apple-touch-icon" href="icon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#0f172a;margin:0;padding:20px;color:white}
-.container{max-width:600px;margin:auto}
-h1{text-align:center;font-weight:600;letter-spacing:0.5px;margin-bottom:24px}
-
-.day-buttons{display:flex;justify-content:center;gap:10px;margin-bottom:20px}
-
-button{padding:10px 16px;border-radius:14px;border:1px solid #334155;background:#1e293b;color:white;cursor:pointer;font-weight:500}
-
-button.active{background:#6366f1;border:none}
-
-.card{background:#1e293b;border-radius:18px;padding:18px;margin-bottom:20px;box-shadow:0 10px 30px rgba(0,0,0,0.35)}
-
-.exercise{margin-bottom:16px}
-
-.exercise input{
-width:100%;
-padding:12px;
-border-radius:12px;
-border:1px solid #334155;
-margin-top:6px;
-background:#0f172a;
-color:white;
-font-size:14px
+body {
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
+  background:#0f172a;
+  color:white;
 }
 
-.small{font-size:12px;color:#94a3b8}
+.header {
+  font-size:28px;
+  font-weight:700;
+  padding:20px;
+  text-align:center;
+}
 
-.log{margin-top:6px}
+.container {
+  padding:20px;
+  padding-bottom:100px;
+}
 
+.card {
+  background:#1e293b;
+  border-radius:20px;
+  padding:20px;
+  margin-bottom:15px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.3);
+}
+
+.card input {
+  width:70px;
+  margin-left:10px;
+  background:#0f172a;
+  border:none;
+  border-radius:8px;
+  padding:5px;
+  color:white;
+}
+
+.add-btn {
+  width:100%;
+  padding:16px;
+  border:none;
+  border-radius:20px;
+  background:#3b82f6;
+  color:white;
+  font-size:16px;
+  font-weight:600;
+}
+
+.tabs {
+  position:fixed;
+  bottom:0;
+  width:100%;
+  background:#111827;
+  display:flex;
+  justify-content:space-around;
+  padding:12px 0;
+  border-top:1px solid #1f2937;
+}
+
+.tab {
+  text-align:center;
+  font-size:12px;
+  color:#9ca3af;
+}
+
+.tab.active {
+  color:white;
+  font-weight:600;
+}
+
+.modal {
+  display:none;
+  position:fixed;
+  z-index:1000;
+  left:0;top:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.6);
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-content {
+  background:#1e293b;
+  border-radius:20px;
+  padding:20px;
+  max-width:400px;
+  width:90%;
+  max-height:80%;
+  overflow-y:auto;
+}
+
+.category {
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+
+.exercise-item {
+  padding:10px;
+  background:#111827;
+  margin-bottom:8px;
+  border-radius:12px;
+  cursor:pointer;
+}
+
+.exercise-item:hover {
+  background:#3b82f6;
+}
 </style>
 </head>
 
 <body>
 
+<div class="header">Total Body Lift</div>
+
+<div class="container" id="workoutList"></div>
+
 <div class="container">
-
-<h1>Total Body Lift</h1>
-
-<div class="day-buttons">
-<button onclick="setDay('A')" id="btnA" class="active">Day A</button>
-<button onclick="setDay('B')" id="btnB">Day B</button>
-<button onclick="setDay('C')" id="btnC">Day C</button>
+<button class="add-btn" onclick="openModal()">+ Add Exercise</button>
 </div>
 
-<div class="card" id="workout"></div>
-
-<div class="card">
-<b>Progression Rule</b>
-<p class="small">When you reach the top of the rep range for all sets, increase weight next workout by the smallest increment.</p>
-
-<b>Shoulder & Back Notes</b>
-<p class="small">Use neutral grips, avoid maximal loading, stop 1–2 reps before failure.</p>
+<div class="tabs">
+<div class="tab active">🏋️ Workout</div>
+<div class="tab">📊 Progress</div>
+<div class="tab">⚙️ Settings</div>
 </div>
 
+<!-- Exercise Modal -->
+<div class="modal" id="exerciseModal">
+  <div class="modal-content">
+    <h3>Select Exercise</h3>
+    <div id="categories"></div>
+    <div id="exerciseItems"></div>
+    <button class="add-btn" onclick="closeModal()">Close</button>
+  </div>
 </div>
 
 <script>
+// Exercise Database
+const exerciseDatabase = {
+  "Chest": ["Bench Press", "Incline DB Press", "Chest Fly"],
+  "Back": ["Lat Pulldown", "Row", "Pull-Up"],
+  "Shoulders": ["DB Shoulder Press", "Lateral Raise", "Front Raise"],
+  "Arms": ["Bicep Curl", "Hammer Curl", "Tricep Pushdown", "Overhead Tricep Extension"],
+  "Legs": ["Squat", "Leg Press", "Hack Squat", "Goblet Squat"],
+  "Core": ["Plank", "Russian Twist", "Cable Crunch"]
+};
 
-let day='A'
+let workouts = JSON.parse(localStorage.getItem("workouts")) || [];
 
-const savedLogs = JSON.parse(localStorage.getItem('tbl_logs') || '{}')
-
-const workouts={
-A:[
-{name:'Machine Chest Press',target:'3 x 6-8'},
-{name:'Neutral Grip Lat Pulldown',target:'3 x 8-10'},
-{name:'Leg Press',target:'3 x 8-10'},
-{name:'Seated DB Lateral Raise',target:'3 x 12-15'},
-{name:'Cable Triceps Pushdown',target:'3 x 10-12'},
-{name:'EZ Bar Curl',target:'3 x 8-12'}
-],
-B:[
-{name:'Incline DB Press (Neutral Grip)',target:'3 x 8-10'},
-{name:'Chest Supported Row',target:'3 x 8-10'},
-{name:'DB Romanian Deadlift (Light)',target:'3 x 8-10'},
-{name:'Cable Face Pull',target:'3 x 12-15'},
-{name:'Overhead Rope Triceps Extension',target:'3 x 10-12'},
-{name:'Hammer Curl',target:'3 x 10-12'}
-],
-C:[
-{name:'Machine Shoulder Press (Neutral)',target:'3 x 6-8'},
-{name:'Assisted Pull-Up or Pulldown',target:'3 x 8-10'},
-{name:'Hack Squat or Goblet Squat',target:'3 x 8-10'},
-{name:'Cable Lateral Raise',target:'3 x 12-15'},
-{name:'Close Grip Bench (Machine/Smith)',target:'3 x 8-10'},
-{name:'Cable Curl',target:'3 x 10-12'}
-]
+function save() {
+  localStorage.setItem("workouts", JSON.stringify(workouts));
+  render();
 }
 
-function saveLogs(){
-localStorage.setItem('tbl_logs',JSON.stringify(savedLogs))
+// Render Workout List
+function render() {
+  const list = document.getElementById("workoutList");
+  list.innerHTML = "";
+  workouts.forEach((w,i)=>{
+    let card = document.createElement("div");
+    card.className="card";
+    card.innerHTML = `
+      <strong>${w.name}</strong><br><br>
+      Weight <input type="number" value="${w.weight}" onchange="update(${i},'weight',this.value)">
+      Sets <input type="number" value="${w.sets}" onchange="update(${i},'sets',this.value)">
+      Reps <input type="number" value="${w.reps}" onchange="update(${i},'reps',this.value)">
+    `;
+    list.appendChild(card);
+  });
 }
 
-function render(){
-
-const container=document.getElementById('workout')
-container.innerHTML=''
-
-workouts[day].forEach((ex,i)=>{
-
-const div=document.createElement('div')
-div.className='exercise'
-
-const target=document.createElement('div')
-target.className='small'
-target.innerText='Target: '+ex.target
-
-const name=document.createElement('input')
-name.value=ex.name
-name.oninput=(e)=>{workouts[day][i].name=e.target.value}
-
-const log=document.createElement('input')
-log.className='log'
-
-const key=day+'_'+i
-
-log.placeholder='Log weight x reps (example: 60 x 8,8,7)'
-log.value=savedLogs[key]||''
-
-log.oninput=(e)=>{
-savedLogs[key]=e.target.value
-saveLogs()
+// Update field
+function update(index,field,value){
+  workouts[index][field] = Number(value);
+  save();
 }
 
-
-div.appendChild(target)
-div.appendChild(name)
-div.appendChild(log)
-
-container.appendChild(div)
-
-})
+// Modal Functions
+function openModal(){
+  const modal = document.getElementById("exerciseModal");
+  modal.style.display = "flex";
+  const categoriesDiv = document.getElementById("categories");
+  categoriesDiv.innerHTML = "";
+  Object.keys(exerciseDatabase).forEach(cat=>{
+    let btn = document.createElement("button");
+    btn.innerText = cat;
+    btn.className = "add-btn";
+    btn.style.marginBottom="10px";
+    btn.onclick = ()=>showExercises(cat);
+    categoriesDiv.appendChild(btn);
+  });
 }
 
-function setDay(d){
-
-day=d
-
-document.getElementById('btnA').classList.remove('active')
-document.getElementById('btnB').classList.remove('active')
-document.getElementById('btnC').classList.remove('active')
-
-
-document.getElementById('btn'+d).classList.add('active')
-
-render()
-
+function closeModal(){
+  const modal = document.getElementById("exerciseModal");
+  modal.style.display = "none";
+  document.getElementById("exerciseItems").innerHTML = "";
 }
 
-render()
+// Show exercises in category
+function showExercises(category){
+  const div = document.getElementById("exerciseItems");
+  div.innerHTML = "";
+  exerciseDatabase[category].forEach(ex=>{
+    let item = document.createElement("div");
+    item.className = "exercise-item";
+    item.innerText = ex;
+    item.onclick = ()=>{
+      workouts.push({name:ex,weight:0,sets:3,reps:10});
+      save();
+      closeModal();
+    };
+    div.appendChild(item);
+  });
+}
 
+render();
 </script>
 
 </body>

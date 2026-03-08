@@ -1,5 +1,5 @@
 {
-  "name": "Andy's Gym Log",
+  "name": "Gym Log",
   "short_name": "Gym Log",
   "start_url": ".",
   "display": "standalone",
@@ -7,7 +7,7 @@
   "theme_color": "#111827",
   "icons": [
     {
-      "src": "icon-512.png",
+      "src": "apple-touch-icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
